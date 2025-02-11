@@ -1,5 +1,6 @@
 aiohttp
 discord.py
+discord
 google-generativeai
 python-dotenv
 youtube-transcript-api
