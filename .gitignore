@@ -1,2 +1,57 @@
+# Byte-compiled / optimized / DLL files
 __pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
 .env
+.envrc
+*.venv
+pip-log.txt
+pip-delete-this-directory.txt
+
+# VS Code settings
+.vscode/
+*.code-workspace
+
+# Logs and cache
+logs/
+*.log
+*.out
+*.err
+*.pid
+*.seed
+*.state
+
+# Python-specific
+*.pyc
+*.pyo
+*.pyd
+*.swp
+*.swo
+*.bak
+
+# Dependencies
+*.egg-info/
+dist/
+build/
+
+# Jupyter Notebook checkpoints (if used)
+.ipynb_checkpoints/
+
+# Ignore generated files
+*.sqlite3
+db.sqlite3
+
+# Ignore Discord token or API keys
+config.json
+google_api_key.json
+
+# Ignore Docker-related files (if applicable)
+Dockerfile
+*.dockerignore
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
