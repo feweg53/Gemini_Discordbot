@@ -9,7 +9,7 @@ async def handle_member_ban(guild: discord.Guild,
                             write_log):
     """
     Handle member ban events.
-    - Sends a Tieba-laoge style ban message to the log channel.
+    - Sends a 贴吧老哥 style ban message to the log channel.
     - Uses get_log_channel(guild) and write_log(text) from the main bot.
     """
     # Log event
@@ -26,7 +26,7 @@ async def handle_member_ban(guild: discord.Guild,
             pass
         return
 
-    msg = f"🚫 {user.mention} 好家伙，这是把管理员得罪干净了？溜了溜了。"
+    msg = f"🚫 {user.mention} 被此群拉黑了！好家伙，这是没看群规则吗？溜了溜了。"
 
     try:
         await channel.send(msg)
@@ -113,11 +113,11 @@ async def handle_member_remove(member: discord.Member,
         try:
             if moderator:
                 msg = (
-                    f"👢 {member.mention} 不守规矩。{moderator.mention} 按我的意思把他请走了。"
+                    f"👢 {member.mention} 不守群规则。管理员 {moderator.mention} 把他踢出群聊了。"
                 )
             else:
                 msg = (
-                    f"👢 {member.mention} 不守规矩的，我让管理员把他请出去。"
+                    f"👢 {member.mention} 不守群规则，管理员把他踢出去了。"
                 )
 
             await channel.send(msg)
@@ -138,7 +138,7 @@ async def handle_member_remove(member: discord.Member,
         return
 
     # Neither ban nor kick -> treat as leave
-    msg = f"👋 {member.mention} 哦豁，这位受不了自己溜了？挺干脆的哈。"
+    msg = f"👋 {member.mention} 哦豁，这位成员受不了这个群聊，连夜卷铺盖溜了。"
 
     try:
         await channel.send(msg)
