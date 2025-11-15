@@ -20,7 +20,7 @@ def days_in_server(joined_at):
 
 # 固定大图
 BAN_BIG_IMAGE = "https://i.imgflip.com/44yl6z.jpg"
-KICK_BIG_IMAGE = "https://media1.tenor.com/m/SnYsp-deklEAAAAd/h2di-cat-annoyed.gif"
+KICK_BIG_IMAGE = "https://pic2.zhimg.com/v2-c446dd39e3b7a7c3bde56560daf1291f_r.jpg"
 LEAVE_BIG_IMAGE = "https://i.imgur.com/l1DM8Wo.jpg"
 
 
