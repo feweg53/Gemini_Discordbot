@@ -83,7 +83,7 @@ async def handle_member_ban(guild, user, get_log_channel, write_log):
     )
 
     embed = discord.Embed(
-        title="🚫 成员被拉黑",
+        title="🚫 震惊：一位太空人被本群拉黑！",
         description=description,
         color=0xE74C3C,  # 红色
         timestamp=discord.utils.utcnow(),
@@ -194,7 +194,7 @@ async def handle_member_remove(member, get_log_channel, write_log):
         )
 
         embed = discord.Embed(
-            title="👢 成员被踢出",
+            title="👢 一位太空人不知道犯了什么错被踢出",
             description=description,
             color=0xF39C12,  # 黄色
             timestamp=discord.utils.utcnow(),
@@ -250,7 +250,7 @@ async def handle_member_remove(member, get_log_channel, write_log):
     )
 
     embed = discord.Embed(
-        title="🛫 成员离开",
+        title="🛫 一位太空人连夜卷铺盖跑路",
         description=description,
         color=0x588BA8,  # 群主题色
         timestamp=discord.utils.utcnow(),
