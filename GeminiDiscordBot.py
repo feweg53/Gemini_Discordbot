@@ -10,7 +10,7 @@ from youtube_transcript_api import YouTubeTranscriptApi
 import fitz  # For PDF support
 import datetime  # 🔹 用于时间戳
 
-from member_events import handle_member_ban, handle_member_remove  # 🔹 NEW import
+from member_events import handle_member_ban, handle_member_remove  # 🔹 成员事件模块
 
 # Load environment variables
 load_dotenv()
@@ -19,15 +19,24 @@ GOOGLE_AI_KEY = os.getenv("GOOGLE_AI_KEY")
 DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
 MAX_HISTORY = int(os.getenv("MAX_HISTORY", 10))
 
-# 📌 日志频道（你给的 channel ID）
+# 📌 日志频道（从 .env 读取）
 LOG_CHANNEL_ID = os.getenv("LOG_CHANNEL_ID")
 if LOG_CHANNEL_ID:
-    LOG_CHANNEL_ID = int(LOG_CHANNEL_ID)
+    try:
+        LOG_CHANNEL_ID = int(LOG_CHANNEL_ID)
+    except ValueError:
+        print(f"⚠ LOG_CHANNEL_ID={LOG_CHANNEL_ID} 不是有效的整数，将不会发送日志消息。")
+        LOG_CHANNEL_ID = None
 else:
     print("⚠ LOG_CHANNEL_ID not set in .env — log messages will not send.")
+    LOG_CHANNEL_ID = None
 
 # Configure the Google API
-genai.configure(api_key=GOOGLE_AI_KEY)
+if not GOOGLE_AI_KEY:
+    print("❌ GOOGLE_AI_KEY not set in .env — Gemini 功能将无法使用。")
+else:
+    genai.configure(api_key=GOOGLE_AI_KEY)
+
 
 # 🔹 简单文件日志函数：写到 bot_log.txt
 def write_log(text: str):
@@ -41,6 +50,7 @@ def write_log(text: str):
     except Exception as e:
         # 日志写失败就简单打印一下，不要影响主逻辑
         print(f"[LOG ERROR] {e}")
+
 
 # 🟨 贴吧老哥 贱贱毒舌预设
 TIEBA_PRESET = """
@@ -66,22 +76,30 @@ TIEBA_PRESET = """
 总之，你是一个嘴上损、心里还挺好、乐于帮人的贴吧老哥。
 """
 
+
 # Function: create Gemini model with Tieba style
 def create_gemini_model():
+    if not GOOGLE_AI_KEY:
+        # 没 key 的情况直接返回 None，避免后面报错
+        return None
     return genai.GenerativeModel(
         "gemini-2.0-flash",
-        system_instruction=TIEBA_PRESET
+        system_instruction=TIEBA_PRESET,
     )
 
+
 # Function: call Gemini
-async def ask_gemini(prompt):
+async def ask_gemini(prompt: str) -> str:
     try:
         model = create_gemini_model()
+        if model is None:
+            return "❌ 当前未配置 GOOGLE_AI_KEY，本人龙傲天暂时回答不了问题。"
+
         response = model.generate_content(prompt)
 
-        if hasattr(response, 'candidates') and response.candidates:
+        if hasattr(response, "candidates") and response.candidates:
             candidate = response.candidates[0]
-            if hasattr(candidate, 'content') and candidate.content:
+            if hasattr(candidate, "content") and candidate.content:
                 return candidate.content.parts[0].text
 
         return str(response)
@@ -92,17 +110,20 @@ async def ask_gemini(prompt):
 
 
 # Discord bot setup
-intents = discord.Intents.all()
+intents = discord.Intents.all()  # 确保 Developer Portal 里也打开 SERVER MEMBERS INTENT
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 # Chat history
-chat_history = []
+chat_history: list[str] = []
+
 
 ############################################
 # Helper — get your custom log channel
 ############################################
 
 def get_log_channel(guild: discord.Guild):
+    if LOG_CHANNEL_ID is None:
+        return None
     return guild.get_channel(LOG_CHANNEL_ID)
 
 
@@ -123,13 +144,13 @@ async def on_ready():
 ############################################
 
 @bot.event
-async def on_member_ban(guild, user):
+async def on_member_ban(guild: discord.Guild, user: discord.abc.User):
     # Delegate to modular handler
     await handle_member_ban(guild, user, get_log_channel, write_log)
 
 
 @bot.event
-async def on_member_remove(member):
+async def on_member_remove(member: discord.Member):
     # Delegate to modular handler
     await handle_member_remove(member, get_log_channel, write_log)
 
@@ -139,21 +160,24 @@ async def on_member_remove(member):
 ############################################
 
 @bot.event
-async def on_message(message):
+async def on_message(message: discord.Message):
     if message.author.bot:
         return
 
     # 🔹 记录所有用户消息
-    location = (
-        f"DM" if isinstance(message.channel, discord.DMChannel)
-        else f"{message.guild.name} #{message.channel}"
-    )
+    if isinstance(message.channel, discord.DMChannel):
+        location = "DM"
+    else:
+        # 防御：有些极端情况 guild 可能为 None，这里再保险一下
+        guild_name = message.guild.name if message.guild else "UnknownGuild"
+        location = f"{guild_name} #{message.channel}"
+
     write_log(
         f"USER_MESSAGE: {message.author} ({message.author.id}) in {location}: {message.content}"
     )
 
     # Mention trigger (e.g., @智能智障)
-    if bot.user.mention in message.content:
+    if bot.user and bot.user.mention in message.content:
         user_input = message.content.replace(bot.user.mention, "").strip()
 
         chat_history.append(f"User: {user_input}")
@@ -163,7 +187,9 @@ async def on_message(message):
         full_prompt = "\n".join(chat_history) + f"\nUser: {user_input}\n贴吧老哥："
 
         # 🔹 记录发给 Gemini 的完整 prompt
-        write_log(f"GEMINI_PROMPT for {message.author} ({message.author.id}): {full_prompt}")
+        write_log(
+            f"GEMINI_PROMPT for {message.author} ({message.author.id}): {full_prompt}"
+        )
 
         reply = await ask_gemini(full_prompt)
 
@@ -185,8 +211,11 @@ async def on_message(message):
 ############################################
 
 @bot.command()
-async def ping(ctx):
-    write_log(f"PING_COMMAND from {ctx.author} ({ctx.author.id}) in {ctx.guild.name} #{ctx.channel}")
+async def ping(ctx: commands.Context):
+    guild_name = ctx.guild.name if ctx.guild else "UnknownGuild"
+    write_log(
+        f"PING_COMMAND from {ctx.author} ({ctx.author.id}) in {guild_name} #{ctx.channel}"
+    )
     await ctx.send("在呢，怎么了？")
 
 
@@ -194,6 +223,7 @@ async def ping(ctx):
 #  RUN
 ############################################
 
-bot.run(DISCORD_BOT_TOKEN)
-
-
+if not DISCORD_BOT_TOKEN:
+    print("❌ DISCORD_BOT_TOKEN not set in .env — bot 无法启动。")
+else:
+    bot.run(DISCORD_BOT_TOKEN)
