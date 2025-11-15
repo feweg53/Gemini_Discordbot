@@ -37,6 +37,10 @@ The original bot that just does text and images is under `GeminiSimple.py`, If y
   ```
 
 
+sudo apt install screen -y
+screen -S GeminiDiscordBot
+python3 GeminiDiscordBot.py
+
 ### Installation
 
 1. Clone the repository to your local machine.
