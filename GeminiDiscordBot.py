@@ -187,7 +187,7 @@ async def on_message(message):
 @bot.command()
 async def ping(ctx):
     write_log(f"PING_COMMAND from {ctx.author} ({ctx.author.id}) in {ctx.guild.name} #{ctx.channel}")
-    await ctx.send("在呢")
+    await ctx.send("在呢，怎么了？")
 
 
 ############################################
@@ -195,4 +195,5 @@ async def ping(ctx):
 ############################################
 
 bot.run(DISCORD_BOT_TOKEN)
+
 
