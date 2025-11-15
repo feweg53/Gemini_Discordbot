@@ -41,6 +41,8 @@ sudo apt install screen -y
 
 screen -S GeminiDiscordBot
 
+source .venv/bin/activate
+
 python3 GeminiDiscordBot.py
 
 ### Installation
