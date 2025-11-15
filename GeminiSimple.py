@@ -50,7 +50,6 @@ def generate_content(prompt):
     except Exception as e:
         return f"Exception: {e}"
 
-
 if __name__ == "__main__":
     print("Gemini Chatbot 已启动（贴吧毒舌老哥模式）")
 
