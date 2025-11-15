@@ -20,7 +20,11 @@ DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
 MAX_HISTORY = int(os.getenv("MAX_HISTORY", 10))
 
 # 📌 日志频道（你给的 channel ID）
-LOG_CHANNEL_ID = 806718289849221171
+LOG_CHANNEL_ID = os.getenv("LOG_CHANNEL_ID")
+if LOG_CHANNEL_ID:
+    LOG_CHANNEL_ID = int(LOG_CHANNEL_ID)
+else:
+    print("⚠ LOG_CHANNEL_ID not set in .env — log messages will not send.")
 
 # Configure the Google API
 genai.configure(api_key=GOOGLE_AI_KEY)
@@ -191,3 +195,4 @@ async def ping(ctx):
 ############################################
 
 bot.run(DISCORD_BOT_TOKEN)
+
